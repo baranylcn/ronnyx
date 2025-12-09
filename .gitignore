@@ -1,0 +1,17 @@
+.env
+venv/
+__pycache__/
+*.pyc
+.DS_Store
+.idea/
+.vscode/
+*.log
+node_modules/
+dist/
+build/
+*.sqlite3
+*.db
+*.bak
+*.swp
+*.tmp
+

@@ -1,0 +1,44 @@
+[build-system]
+requires = ["hatchling>=1.25.0"]
+build-backend = "hatchling.build"
+
+[project]
+name = "ronnyx"
+version = "0.1.0"
+description = "Extended orchestration-ready personal assistant framework built with LangGraph and FastAPI."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [
+  { name = "Baran Yalçın" }
+]
+
+dependencies = [
+  "fastapi>=0.111.0,<1.0.0",
+  "uvicorn[standard]>=0.30.0,<1.0.0",
+  "python-dotenv>=1.0.1,<2.0.0",
+  "pydantic>=2.8.0,<3.0.0",
+  "pydantic-settings>=2.3.0,<3.0.0",
+  "requests>=2.32.0,<3.0.0",
+  "langchain-core>=0.3.0,<0.4.0",
+  "langchain-openai>=0.2.0,<0.3.0",
+  "langgraph>=0.2.0,<0.3.0",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8.0.0,<9.0.0",
+  "black>=24.8.0,<25.0.0",
+  "ruff>=0.6.0,<0.7.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/baranylcn/ronnyx"
+Source = "https://github.com/baranylcn/ronnyx"
+Issues = "https://github.com/baranylcn/ronnyx/issues"
+
+[tool.hatch.build.targets.wheel]
+packages = ["app"]
+
+[tool.hatch.build.targets.sdist]
+include = ["app", "README.md", "pyproject.toml"]
