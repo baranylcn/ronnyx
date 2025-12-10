@@ -10,6 +10,8 @@ from langgraph.graph import StateGraph, END
 from langgraph.prebuilt import ToolNode
 from dotenv import load_dotenv
 
+from app.core.prompts import ASSISTANT_SYSTEM_PROMPT
+
 load_dotenv()
 
 # State 
@@ -249,7 +251,7 @@ def create_notion_task(
             "title": title,
             "status": status,
             "due_date": due_date,
-            "url": notion_url,
+            "url": url,
             "assignees": assignees_names,
         },
     }
@@ -433,13 +435,8 @@ llm = ChatOpenAI(model="gpt-4o-mini").bind_tools(tools=tools)
 
 
 def call_llm(state: AgentState) -> AgentState:
-    system_prompt = SystemMessage(
-        content=(
-            "You are my AI assistant. You can use Notion tools to read, create, "
-            "update and delete tasks. Ask for clarification if task/assignee is ambiguous."
-        )
-    )
-    response = llm.invoke([system_prompt] + list(state["messages"]))
+    system_message = SystemMessage(content=ASSISTANT_SYSTEM_PROMPT)
+    response = llm.invoke([system_message] + list(state["messages"]))
     return {"messages": [response]}
 
 
