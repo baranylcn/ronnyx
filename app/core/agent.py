@@ -1,15 +1,15 @@
 from typing import Annotated, Sequence, TypedDict
 
-from langchain_core.messages import SystemMessage, BaseMessage
-from langchain_openai import ChatOpenAI
-from langgraph.graph.message import add_messages
-from langgraph.graph import StateGraph, END
-from langgraph.prebuilt import ToolNode
 from dotenv import load_dotenv
+from langchain_core.messages import BaseMessage, SystemMessage
+from langchain_openai import ChatOpenAI
+from langgraph.graph import END, StateGraph
+from langgraph.graph.message import add_messages
+from langgraph.prebuilt import ToolNode
 
-from app.core.prompts import ASSISTANT_SYSTEM_PROMPT
-from app.core.notion_tools import notion_tools
 from app.core.github_tools import github_tools
+from app.core.notion_tools import notion_tools
+from app.core.prompts import ASSISTANT_SYSTEM_PROMPT
 
 load_dotenv()
 

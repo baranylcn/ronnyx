@@ -1,7 +1,7 @@
-from typing import Optional, List, Dict
 import os
-import requests
+from typing import Dict, List, Optional
 
+import requests
 from langchain_core.tools import tool
 
 
@@ -61,7 +61,11 @@ def show_notion_tasks() -> dict:
 
     response = requests.post(url, headers=headers, json=payload)
     if response.status_code != 200:
-        return {"success": False, "status_code": response.status_code, "error": response.text}
+        return {
+            "success": False,
+            "status_code": response.status_code,
+            "error": response.text,
+        }
 
     data = response.json()
     results = data.get("results", [])
@@ -134,13 +138,20 @@ def create_notion_task(
             properties["Assignee"] = {"people": [{"id": user_id}]}
             assignees_names = [assignee_name]
         else:
-            return {"success": False, "error": f"Could not find Notion user matching name '{assignee_name}'."}
+            return {
+                "success": False,
+                "error": f"Could not find Notion user matching name '{assignee_name}'.",
+            }
 
     payload = {"parent": {"database_id": db_id}, "properties": properties}
 
     response = requests.post(url, headers=headers, json=payload)
     if response.status_code != 200:
-        return {"success": False, "status_code": response.status_code, "error": response.text}
+        return {
+            "success": False,
+            "status_code": response.status_code,
+            "error": response.text,
+        }
 
     data = response.json()
     page_id = data.get("id")
@@ -196,7 +207,10 @@ def update_notion_task(
         if user_id:
             properties["Assignee"] = {"people": [{"id": user_id}]}
         else:
-            return {"success": False, "error": f"Could not find Notion user matching name '{assignee_name}'."}
+            return {
+                "success": False,
+                "error": f"Could not find Notion user matching name '{assignee_name}'.",
+            }
 
     if not properties:
         return {"success": False, "error": "No fields provided to update."}
@@ -205,7 +219,11 @@ def update_notion_task(
 
     response = requests.patch(url, headers=headers, json=payload)
     if response.status_code != 200:
-        return {"success": False, "status_code": response.status_code, "error": response.text}
+        return {
+            "success": False,
+            "status_code": response.status_code,
+            "error": response.text,
+        }
 
     data = response.json()
     page_props = data.get("properties", {})
@@ -221,7 +239,11 @@ def update_notion_task(
     )
 
     due_prop = page_props.get("Due date")
-    new_due = due_prop["date"]["start"] if due_prop and due_prop.get("date") and due_prop["date"].get("start") else None
+    new_due = (
+        due_prop["date"]["start"]
+        if due_prop and due_prop.get("date") and due_prop["date"].get("start")
+        else None
+    )
 
     assignee_prop = page_props.get("Assignee", {})
     people = assignee_prop.get("people", []) or []
@@ -255,7 +277,11 @@ def delete_notion_task(task_id: str) -> dict:
 
     response = requests.patch(url, headers=headers, json=payload)
     if response.status_code != 200:
-        return {"success": False, "status_code": response.status_code, "error": response.text}
+        return {
+            "success": False,
+            "status_code": response.status_code,
+            "error": response.text,
+        }
 
     return {"success": True, "task_id": task_id}
 

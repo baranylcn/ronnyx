@@ -1,9 +1,8 @@
 from fastapi import APIRouter
 from pydantic import BaseModel
 
-from app.api.deps import graph_app, get_state, set_state, apply_user_message
+from app.api.deps import apply_user_message, get_state, graph_app, set_state
 from app.core.agent import AgentState
-
 
 router = APIRouter()
 

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from typing import Optional, List, Dict, Any, Literal
 import os
+from typing import Any, Dict, Literal, Optional
 
 from github import Github
 from langchain_core.tools import tool
@@ -49,7 +49,9 @@ def github_whoami() -> dict:
 
 
 @tool
-def github_list_repos(visibility: Literal["all", "public", "private"] = "all", limit: int = 50) -> dict:
+def github_list_repos(
+    visibility: Literal["all", "public", "private"] = "all", limit: int = 50
+) -> dict:
     """
     List authenticated user's repositories.
     Returns: {success, repos: [{full_name, private, description}]}
@@ -97,7 +99,15 @@ def github_create_repo(
             private=private,
             auto_init=auto_init,
         )
-        return _ok({"repo": {"full_name": repo.full_name, "private": repo.private, "url": repo.html_url}})
+        return _ok(
+            {
+                "repo": {
+                    "full_name": repo.full_name,
+                    "private": repo.private,
+                    "url": repo.html_url,
+                }
+            }
+        )
     except Exception as e:
         return _err(str(e))
 
@@ -119,7 +129,9 @@ def github_delete_repo(owner: Optional[str], repo: str) -> dict:
 
 
 @tool
-def github_list_commits(owner: Optional[str], repo: str, branch: str = "main", limit: int = 20) -> dict:
+def github_list_commits(
+    owner: Optional[str], repo: str, branch: str = "main", limit: int = 20
+) -> dict:
     """
     List commits on a branch.
     Returns: {success, commits:[{sha, date, message, author}]}
@@ -133,9 +145,19 @@ def github_list_commits(owner: Optional[str], repo: str, branch: str = "main", l
             commits.append(
                 {
                     "sha": c.sha,
-                    "date": c.commit.author.date.isoformat() if c.commit and c.commit.author else None,
-                    "message": (c.commit.message.splitlines()[0] if c.commit and c.commit.message else ""),
-                    "author": (c.commit.author.name if c.commit and c.commit.author else None),
+                    "date": (
+                        c.commit.author.date.isoformat()
+                        if c.commit and c.commit.author
+                        else None
+                    ),
+                    "message": (
+                        c.commit.message.splitlines()[0]
+                        if c.commit and c.commit.message
+                        else ""
+                    ),
+                    "author": (
+                        c.commit.author.name if c.commit and c.commit.author else None
+                    ),
                 }
             )
             if len(commits) >= max(1, min(limit, 100)):
@@ -163,7 +185,9 @@ def github_list_branches(owner: Optional[str], repo: str, limit: int = 100) -> d
 
 
 @tool
-def github_create_branch(owner: Optional[str], repo: str, new_branch: str, source_branch: str = "main") -> dict:
+def github_create_branch(
+    owner: Optional[str], repo: str, new_branch: str, source_branch: str = "main"
+) -> dict:
     """
     Create a branch from source_branch.
     Returns: {success, repo, new_branch, source_branch, sha}
@@ -175,7 +199,14 @@ def github_create_branch(owner: Optional[str], repo: str, new_branch: str, sourc
         source = r.get_branch(source_branch)
         sha = source.commit.sha
         r.create_git_ref(ref=f"refs/heads/{new_branch}", sha=sha)
-        return _ok({"repo": full_name, "new_branch": new_branch, "source_branch": source_branch, "sha": sha})
+        return _ok(
+            {
+                "repo": full_name,
+                "new_branch": new_branch,
+                "source_branch": source_branch,
+                "sha": sha,
+            }
+        )
     except Exception as e:
         return _err(str(e))
 
@@ -208,7 +239,14 @@ def github_create_file(
         full_name = _get_repo_full_name(owner, repo)
         r = g.get_repo(full_name)
         res = r.create_file(path, message, content, branch=branch)
-        return _ok({"repo": full_name, "path": path, "branch": branch, "commit_sha": res["commit"].sha})
+        return _ok(
+            {
+                "repo": full_name,
+                "path": path,
+                "branch": branch,
+                "commit_sha": res["commit"].sha,
+            }
+        )
     except Exception as e:
         return _err(str(e))
 
@@ -229,7 +267,14 @@ def github_update_file(
         r = g.get_repo(full_name)
         f = r.get_contents(path, ref=branch)
         res = r.update_file(f.path, message, content, f.sha, branch=branch)
-        return _ok({"repo": full_name, "path": path, "branch": branch, "commit_sha": res["commit"].sha})
+        return _ok(
+            {
+                "repo": full_name,
+                "path": path,
+                "branch": branch,
+                "commit_sha": res["commit"].sha,
+            }
+        )
     except Exception as e:
         return _err(str(e))
 
@@ -249,13 +294,25 @@ def github_delete_file(
         r = g.get_repo(full_name)
         f = r.get_contents(path, ref=branch)
         res = r.delete_file(f.path, message, f.sha, branch=branch)
-        return _ok({"repo": full_name, "path": path, "branch": branch, "commit_sha": res["commit"].sha})
+        return _ok(
+            {
+                "repo": full_name,
+                "path": path,
+                "branch": branch,
+                "commit_sha": res["commit"].sha,
+            }
+        )
     except Exception as e:
         return _err(str(e))
 
 
 @tool
-def github_list_issues(owner: Optional[str], repo: str, state: Literal["open", "closed", "all"] = "open", limit: int = 20) -> dict:
+def github_list_issues(
+    owner: Optional[str],
+    repo: str,
+    state: Literal["open", "closed", "all"] = "open",
+    limit: int = 20,
+) -> dict:
     """List issues. Returns: {success, repo, issues:[{number,title,state,url}]}"""
     try:
         g = _gh()
@@ -263,7 +320,14 @@ def github_list_issues(owner: Optional[str], repo: str, state: Literal["open", "
         r = g.get_repo(full_name)
         out = []
         for i in r.get_issues(state=state):
-            out.append({"number": i.number, "title": i.title, "state": i.state, "url": i.html_url})
+            out.append(
+                {
+                    "number": i.number,
+                    "title": i.title,
+                    "state": i.state,
+                    "url": i.html_url,
+                }
+            )
             if len(out) >= max(1, min(limit, 200)):
                 break
         return _ok({"repo": full_name, "issues": out})
@@ -272,14 +336,25 @@ def github_list_issues(owner: Optional[str], repo: str, state: Literal["open", "
 
 
 @tool
-def github_create_issue(owner: Optional[str], repo: str, title: str, body: str = "") -> dict:
+def github_create_issue(
+    owner: Optional[str], repo: str, title: str, body: str = ""
+) -> dict:
     """Create issue. Returns: {success, repo, issue:{number,title,url}}"""
     try:
         g = _gh()
         full_name = _get_repo_full_name(owner, repo)
         r = g.get_repo(full_name)
         issue = r.create_issue(title=title, body=body)
-        return _ok({"repo": full_name, "issue": {"number": issue.number, "title": issue.title, "url": issue.html_url}})
+        return _ok(
+            {
+                "repo": full_name,
+                "issue": {
+                    "number": issue.number,
+                    "title": issue.title,
+                    "url": issue.html_url,
+                },
+            }
+        )
     except Exception as e:
         return _err(str(e))
 
@@ -299,7 +374,12 @@ def github_close_issue(owner: Optional[str], repo: str, number: int) -> dict:
 
 
 @tool
-def github_list_prs(owner: Optional[str], repo: str, state: Literal["open", "closed", "all"] = "open", limit: int = 20) -> dict:
+def github_list_prs(
+    owner: Optional[str],
+    repo: str,
+    state: Literal["open", "closed", "all"] = "open",
+    limit: int = 20,
+) -> dict:
     """List pull requests. Returns: {success, repo, prs:[{number,title,state,url,head,base}]}"""
     try:
         g = _gh()
@@ -339,13 +419,20 @@ def github_create_pr(
         full_name = _get_repo_full_name(owner, repo)
         r = g.get_repo(full_name)
         pr = r.create_pull(title=title, body=body, head=head, base=base)
-        return _ok({"repo": full_name, "pr": {"number": pr.number, "title": pr.title, "url": pr.html_url}})
+        return _ok(
+            {
+                "repo": full_name,
+                "pr": {"number": pr.number, "title": pr.title, "url": pr.html_url},
+            }
+        )
     except Exception as e:
         return _err(str(e))
 
 
 @tool
-def github_merge_pr(owner: Optional[str], repo: str, number: int, commit_message: str = "") -> dict:
+def github_merge_pr(
+    owner: Optional[str], repo: str, number: int, commit_message: str = ""
+) -> dict:
     """Merge a PR. DESTRUCTIVE-ish. Returns: {success, repo, number, merged}"""
     try:
         g = _gh()
@@ -353,7 +440,14 @@ def github_merge_pr(owner: Optional[str], repo: str, number: int, commit_message
         r = g.get_repo(full_name)
         pr = r.get_pull(number)
         res = pr.merge(commit_message=commit_message or None)
-        return _ok({"repo": full_name, "number": number, "merged": bool(res.merged), "message": res.message})
+        return _ok(
+            {
+                "repo": full_name,
+                "number": number,
+                "merged": bool(res.merged),
+                "message": res.message,
+            }
+        )
     except Exception as e:
         return _err(str(e))
 
@@ -396,7 +490,13 @@ def github_search_repositories(query: str, limit: int = 10) -> dict:
         g = _gh()
         out = []
         for r in g.search_repositories(query):
-            out.append({"full_name": r.full_name, "stars": r.stargazers_count, "url": r.html_url})
+            out.append(
+                {
+                    "full_name": r.full_name,
+                    "stars": r.stargazers_count,
+                    "url": r.html_url,
+                }
+            )
             if len(out) >= max(1, min(limit, 50)):
                 break
         return _ok({"query": query, "repos": out})
@@ -412,7 +512,14 @@ def github_search_issues(query: str, limit: int = 10) -> dict:
         out = []
         for i in g.search_issues(query):
             repo_full = i.repository.full_name if i.repository else None
-            out.append({"title": i.title, "url": i.html_url, "repo": repo_full, "number": i.number})
+            out.append(
+                {
+                    "title": i.title,
+                    "url": i.html_url,
+                    "repo": repo_full,
+                    "number": i.number,
+                }
+            )
             if len(out) >= max(1, min(limit, 50)):
                 break
         return _ok({"query": query, "items": out})

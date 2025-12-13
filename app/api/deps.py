@@ -1,7 +1,8 @@
 from typing import Dict
+
 from langchain_core.messages import HumanMessage
 
-from app.core.agent import build_graph, AgentState
+from app.core.agent import AgentState, build_graph
 
 graph_app = build_graph()
 
