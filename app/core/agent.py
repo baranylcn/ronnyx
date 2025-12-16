@@ -7,8 +7,9 @@ from langgraph.graph import END, StateGraph
 from langgraph.graph.message import add_messages
 from langgraph.prebuilt import ToolNode
 
-from app.core.github_tools import github_tools
-from app.core.notion_tools import notion_tools
+#from app.core.tools.github_tools import github_tools
+#from app.core.tools.notion_tools import notion_tools
+from app.core.tools.registry import TOOLS
 from app.core.prompts import ASSISTANT_SYSTEM_PROMPT
 
 load_dotenv()
@@ -18,8 +19,7 @@ class AgentState(TypedDict):
     messages: Annotated[Sequence[BaseMessage], add_messages]
 
 
-tools = notion_tools + github_tools
-llm = ChatOpenAI(model="gpt-4o-mini").bind_tools(tools=tools)
+llm = ChatOpenAI(model="gpt-4o-mini").bind_tools(tools=TOOLS)
 
 
 def call_llm(state: AgentState) -> AgentState:
@@ -39,7 +39,7 @@ def should_continue(state: AgentState) -> str:
 
 def build_graph():
     graph = StateGraph(state_schema=AgentState)
-    tool_node = ToolNode(tools=tools)
+    tool_node = ToolNode(tools=TOOLS)
 
     graph.add_node("agent", call_llm)
     graph.add_node("tools", tool_node)

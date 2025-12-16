@@ -12,11 +12,11 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 # IMPORTS
 # =======================================================================
 try:
-    from app.core.github_tools import (
+    from app.core.tools.github_tools import (
         github_list_repos,
         github_create_repo
     )
-    from app.core.notion_tools import (
+    from app.core.tools.notion_tools import (
         show_notion_tasks,
         create_notion_task,
         delete_notion_task
@@ -42,7 +42,7 @@ def mock_env_vars():
 # NOTION TESTS
 # ==========================
 
-@patch('app.core.notion_tools.requests.post')
+@patch('app.core.tools.notion_tools.requests.post')
 def test_show_notion_tasks(mock_post):
     # 1. Setup fake API response
     mock_response = MagicMock()
@@ -69,7 +69,7 @@ def test_show_notion_tasks(mock_post):
     assert result["success"] is True
     assert result["tasks"][0]["title"] == "Fix Login Bug"
 
-@patch('app.core.notion_tools.requests.post')
+@patch('app.core.tools.notion_tools.requests.post')
 def test_create_notion_task(mock_post):
     # 1. Setup fake response
     mock_response = MagicMock()
@@ -87,7 +87,7 @@ def test_create_notion_task(mock_post):
     assert result["success"] is True
     assert result["task"]["title"] == "Buy Milk"
 
-@patch('app.core.notion_tools.requests.patch')
+@patch('app.core.tools.notion_tools.requests.patch')
 def test_delete_notion_task(mock_patch):
     mock_response = MagicMock()
     mock_response.status_code = 200
@@ -105,7 +105,7 @@ def test_delete_notion_task(mock_patch):
 # GITHUB TESTS
 # ==========================
 
-@patch('app.core.github_tools.Github')
+@patch('app.core.tools.github_tools.Github')
 def test_github_list_repos(mock_github_class):
     # Setup
     mock_instance = mock_github_class.return_value
@@ -126,7 +126,7 @@ def test_github_list_repos(mock_github_class):
     assert result["repos"][0]["full_name"] == "baranylcn/ronnyx"
 
 
-@patch('app.core.github_tools.Github')
+@patch('app.core.tools.github_tools.Github')
 def test_github_create_repo(mock_github_class):
     # Setup
     mock_instance = mock_github_class.return_value
