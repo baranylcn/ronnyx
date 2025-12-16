@@ -35,12 +35,15 @@ Create a `.env` file based on `.env.example`.
 ```bash
 app/
   core/
-    agent.py            # LangGraph agent and tool orchestration
-    *_tools.py          # Platform-specific tool implementations
-    prompts.py          # System prompt
+    agent.py              # LangGraph agent and graph orchestration
+    prompts.py            # System prompt
+    tools/
+      github.py           # GitHub tool implementations
+      notion.py           # Notion tool implementations
+      registry.py         # Tool registry and composition
   api/
-    routers.py          # HTTP API
-    deps.py             # Session state and graph wiring
+    routers.py            # HTTP API
+    deps.py               # Session state and graph wiring
 ```
 
 ---
@@ -51,10 +54,10 @@ app/
 
 Ronnyx is built around tools.
 
-- Each platform integration lives in its own *_tools.py file
+- Each platform integration lives in its own module under app/core/tools/
 - Tools are defined using the @tool decorator
-- Each module exports a <platform>_tools list
-- The agent composes tools dynamically in agent.py
+- Each module exports a list of tools for that platform
+- Tools are composed centrally via the tool registry
 
 This design keeps integrations isolated, explicit, and easy to extend.
 
@@ -64,12 +67,12 @@ This design keeps integrations isolated, explicit, and easy to extend.
 
 To add support for a new platform:
 
-1. Create a new file under app/core/ named <platform>_tools.py
+1. Create a new module under app/core/tools/ (e.g. <platform>.py)
 2. Implement tool functions using the @tool decorator
 3. Initialize any required clients inside the module
 4. Return structured dictionaries (e.g. success, error, payload)
 5. Export all tools in a <platform>_tools list
-6. Register the tools in agent.py
+6. Register the tools in the tools registry
 
 Example structure:
 

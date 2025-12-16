@@ -140,6 +140,21 @@ The core concept remains unchanged:
 
 ---
 
+## Testing
+
+Ronnyx includes an automated test suite to ensure the stability of the agent loop, tool integrations, and API behavior.
+Tests are written using **pytest** and are organized by responsibility (core logic, tools, and API).
+
+### Running tests
+
+Run all tests:
+
+```bash
+pytest
+```
+
+---
+
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE.md) file for details.
@@ -148,5 +163,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE.md) f
 
 ## Contributing
 
-Pull requests and feature proposals are welcome.  
-Lightweight, clean, and modular extensions are encouraged.
+Contributions are welcome.
+Please refer to the [CONTRIBUTING.md](CONTRIBUTING.md) file for guidelines on project structure, development workflow, and contribution expectations.
+Pull requests should be focused, well-structured, and tested.
