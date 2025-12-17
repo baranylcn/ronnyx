@@ -7,8 +7,6 @@ from langgraph.graph import END, StateGraph
 from langgraph.graph.message import add_messages
 from langgraph.prebuilt import ToolNode
 
-#from app.core.tools.github_tools import github_tools
-#from app.core.tools.notion_tools import notion_tools
 from app.core.tools.registry import TOOLS
 from app.core.prompts import ASSISTANT_SYSTEM_PROMPT
 
