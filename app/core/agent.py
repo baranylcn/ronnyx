@@ -9,6 +9,7 @@ from langgraph.prebuilt import ToolNode
 
 from app.core.tools.registry import TOOLS
 from app.core.prompts import ASSISTANT_SYSTEM_PROMPT
+from app.config import settings
 
 load_dotenv()
 
@@ -17,7 +18,7 @@ class AgentState(TypedDict):
     messages: Annotated[Sequence[BaseMessage], add_messages]
 
 
-llm = ChatOpenAI(model="gpt-4o-mini").bind_tools(tools=TOOLS)
+llm = ChatOpenAI(model=settings.llm_model).bind_tools(tools=TOOLS)
 
 
 def call_llm(state: AgentState) -> AgentState:
