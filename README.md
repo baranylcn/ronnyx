@@ -121,6 +121,42 @@ Each session maintains its own conversational history, enabling follow-up questi
 
 ---
 
+## CLI Client
+
+Ronnyx includes an optional command-line interface for interactive use.  
+The CLI communicates with the backend through the same HTTP API used by applications.
+
+### Requirements
+
+Before using the CLI, **the server must be running**:
+
+```bash
+uvicorn app.main:app --port 8000
+```
+
+### Launching the CLI
+
+After installing the project in editable mode:
+
+```bash
+ronnyx-chat
+```
+
+Override the default configuration:
+
+```bash
+ronnyx-chat --base-url http://localhost:8000/api/chat --session-id 42
+```
+
+Example session:
+
+```bash
+You > Hello
+Ronnyx > Hi! How can I help you today?
+```
+
+---
+
 ## Execution Model
 
 Ronnyx follows a consistent execution flow:
