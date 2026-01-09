@@ -1,57 +1,59 @@
 # Ronnyx
 
-Ronnyx is an extensible, orchestration-ready personal assistant framework built on **LangGraph** and **FastAPI**.  
-It enables multi-turn conversational workflows, persistent state per session, and seamless integration with external services through a modular tool system.
-
-The project is designed to evolve over time by adding new tools, agents, and domain-specific capabilities without changing the overall architecture.
+Ronnyx is an extensible personal assistant framework designed for building conversational systems with long-running workflows, external integrations, and session-aware state.
+The project provides a clean separation between reasoning, execution, and communication layers, allowing new capabilities to be added incrementally without altering the core architecture.
+Ronnyx is intended for developers who want to build assistant-like systems that can reason across multiple turns, interact with external services, and maintain continuity over time.
 
 ---
 
-## Features
+## Core Capabilities
 
-- **LangGraph-powered reasoning loop** (agent → tool → agent)
-- **Modular tool system** for integrating external services
-- **FastAPI HTTP interface** for programmatic communication
-- **Session-based conversation memory**
-- **Fully stateless server** with pluggable session backend
+- Multi-turn conversational workflows with persistent session state  
+- Pluggable tool system for interacting with external services  
+- HTTP API for programmatic access and integration  
+- Clear separation between orchestration, tools, and interfaces  
+- Architecture designed for incremental extension rather than rewrites  
+
+---
+
+## Project Structure
+
+The repository is organized around clear responsibilities:
+
+- `app/` – Application logic, orchestration, and API layer  
+- `tests/` – Automated tests covering core logic and API behavior  
+- `.env.example` – Environment variable reference  
+- `CONTRIBUTING.md` – Contribution guidelines and development workflow  
+
+Each component is intentionally kept modular to support long-term evolution.
 
 ---
 
 ## Installation
 
-1. Clone the repository:
+Clone the repository and set up the environment.
 
 ```bash
 git clone https://github.com/baranylcn/ronnyx
 cd ronnyx
-```
-
-2. Create a virtual environment:
-
-```bash
 python -m venv venv
-source venv/bin/activate      # macOS / Linux
-venv\\Scripts\\activate       # Windows
-```
-
-3. Install dependencies:
-
-```bash
+source venv/bin/activate   # macOS / Linux
+venv\\Scripts\\activate    # Windows
 pip install uv
 uv pip install -e .
 ```
 
 ---
 
-## Environment Configuration
+## Configuration
 
-Copy `.env.example` to `.env` and fill in your credentials:
+Create an environment configuration file:
 
 ```bash
 cp .env.example .env
 ```
 
-Minimal required variables:
+Minimum required variables:
 
 ```
 OPENAI_API_KEY=your-key
@@ -60,15 +62,19 @@ DATABASE_ID=your-database-id
 NOTION_VERSION=2022-06-28
 ```
 
+Environment variables define external service access and can be extended as new tools are added.
+
 ---
 
 ## Running the Server
 
+Start the application locally:
+
 ```bash
-uvicorn app.main:app --reload
+uvicorn app.main:app --port 8000
 ```
 
-The API will be available at:
+The service will be available at:
 
 ```
 http://localhost:8000
@@ -80,13 +86,20 @@ Health check endpoint:
 curl http://localhost:8000/health
 ```
 
+Chat API endpoint:
+
+```bash
+curl http://localhost:8000/api/chat
+```
+
 ---
 
-## Chat API Usage
+## Chat API
+**Endpoint:** POST /api/chat
 
-You can interact with the agent via the `/api/chat` endpoint.
+Ronnyx exposes a single conversational entry point that maintains session context across requests.
 
-### Example request
+### Request
 
 ```json
 {
@@ -95,7 +108,7 @@ You can interact with the agent via the `/api/chat` endpoint.
 }
 ```
 
-### Example response
+### Response
 
 ```json
 {
@@ -104,65 +117,96 @@ You can interact with the agent via the `/api/chat` endpoint.
 }
 ```
 
----
-
-## How It Works
-
-1. **The user sends a message**  
-   The API receives the request and attaches it to the session's message history.
-
-2. **The LangGraph agent is invoked**  
-   The agent evaluates the message and decides whether to call a tool.
-
-3. **Tools execute external operations**  
-   The agent can query services, create or update records, or perform higher-level tasks.
-
-4. **Agent reflects on tool results**  
-   The response is passed back through the graph and translated into natural language.
-
-5. **State is persisted**  
-   Each session maintains its message history, enabling multi-turn reasoning.
+Each session maintains its own conversational history, enabling follow-up questions and contextual reasoning.
 
 ---
 
-## Extending Ronnyx
+## CLI Client
 
-Ronnyx is designed to be extended with:
+Ronnyx includes an optional command-line interface for interactive use.  
+The CLI communicates with the backend through the same HTTP API used by applications.
 
-- Additional workflow tools
-- Multi-agent graphs
-- External integrations (productivity apps, knowledge sources, automation APIs)
-- Custom memory backends
-- Advanced orchestration logic
+### Requirements
 
-The core concept remains unchanged:  
-**Agents reason → Tools act → Agents respond.**
+Before using the CLI, **the server must be running**:
+
+```bash
+uvicorn app.main:app --port 8000
+```
+
+### Launching the CLI
+
+After installing the project in editable mode:
+
+```bash
+ronnyx-chat
+```
+
+Override the default configuration:
+
+```bash
+ronnyx-chat --base-url http://localhost:8000/api/chat --session-id 42
+```
+
+Example session:
+
+```bash
+You > Hello
+Ronnyx > Hi! How can I help you today?
+```
+
+---
+
+## Execution Model
+
+Ronnyx follows a consistent execution flow:
+
+1. A user message is received and associated with a session  
+2. The system evaluates the message and determines required actions  
+3. External operations are executed through registered tools  
+4. Results are incorporated into a natural language response  
+5. Session state is updated for subsequent interactions  
+
+This model allows reasoning and execution to evolve independently.
+
+---
+
+## Extending the System
+
+Ronnyx is designed to grow through composition rather than modification. Common extension points include:
+
+- New external service tools  
+- Domain-specific workflows  
+- Alternative memory or persistence backends  
+- Multi-agent or hierarchical orchestration patterns  
+
+The core execution model remains stable while capabilities expand around it.
 
 ---
 
 ## Testing
 
-Ronnyx includes an automated test suite to ensure the stability of the agent loop, tool integrations, and API behavior.
-Tests are written using **pytest** and are organized by responsibility (core logic, tools, and API).
+The project includes an automated test suite covering orchestration logic, tool behavior, and API responses.
 
-### Running tests
-
-Run all tests:
+Run all tests with:
 
 ```bash
 pytest
 ```
 
----
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE.md) file for details.
+Tests are expected for all new functionality added to the system.
 
 ---
 
 ## Contributing
 
 Contributions are welcome.
-Please refer to the [CONTRIBUTING.md](CONTRIBUTING.md) file for guidelines on project structure, development workflow, and contribution expectations.
-Pull requests should be focused, well-structured, and tested.
+
+Please review [CONTRIBUTING](CONTRIBUTING.md) for details on project structure, coding standards, and the contribution workflow.  
+Pull requests should be focused, clearly scoped, and accompanied by relevant tests.
+
+---
+
+## License
+
+This project is licensed under the MIT License. See the [LICENS](LICENSE.md) file for details.

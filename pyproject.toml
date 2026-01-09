@@ -33,6 +33,9 @@ dev = [
   "ruff>=0.6.0,<0.7.0",
 ]
 
+[project.scripts]
+ronnyx-chat = "app.cli:main"
+
 [project.urls]
 Homepage = "https://github.com/baranylcn/ronnyx"
 Source = "https://github.com/baranylcn/ronnyx"

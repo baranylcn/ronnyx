@@ -11,7 +11,7 @@ class Settings(BaseSettings):
     discord_bot_token: str | None = Field(default=None, alias="DISCORD_BOT_TOKEN")
     discord_guild_id: str | None = Field(default=None, alias="DISCORD_GUILD_ID")
 
-    llm_model: str = Field(default="gpt-4o-mini", alias="LLM_MODEL")
+    llm_model: str = Field(default="gpt-4o", alias="LLM_MODEL")
 
     class Config:
         env_file = ".env"
