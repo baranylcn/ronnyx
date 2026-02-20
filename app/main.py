@@ -10,6 +10,11 @@ app = FastAPI(title="Ronnyx")
 app.include_router(chat_router, prefix="/api")
 
 
+@app.get("/")
+def root():
+    return {"message": "Welcome to Ronnyx API!"}
+
+
 @app.get("/health")
 def health():
     return {"status": "ok"}
