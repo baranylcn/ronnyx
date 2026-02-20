@@ -7,9 +7,9 @@ from langgraph.graph import END, StateGraph
 from langgraph.graph.message import add_messages
 from langgraph.prebuilt import ToolNode
 
-from app.core.tools.registry import TOOLS
-from app.core.prompts import ASSISTANT_SYSTEM_PROMPT
-from app.config import settings
+from ronnyx.core.tools.registry import TOOLS
+from ronnyx.core.prompts import ASSISTANT_SYSTEM_PROMPT
+from ronnyx.config import settings
 
 load_dotenv()
 

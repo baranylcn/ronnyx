@@ -2,7 +2,7 @@ from typing import Dict
 
 from langchain_core.messages import HumanMessage
 
-from app.core.agent import AgentState, build_graph
+from ronnyx.core.agent import AgentState, build_graph
 
 graph_app = build_graph()
 

@@ -1,7 +1,7 @@
 from dotenv import load_dotenv
 from fastapi import FastAPI
 
-from app.api.routers import router as chat_router
+from ronnyx.api.routers import router as chat_router
 
 load_dotenv()
 
