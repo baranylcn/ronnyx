@@ -38,7 +38,7 @@ git clone https://github.com/baranylcn/ronnyx
 cd ronnyx
 python -m venv venv
 source venv/bin/activate   # macOS / Linux
-venv\\Scripts\\activate    # Windows
+venv\Scripts\activate    # Windows
 pip install uv
 uv pip install -e .
 ```
@@ -209,4 +209,4 @@ Pull requests should be focused, clearly scoped, and accompanied by relevant tes
 
 ## License
 
-This project is licensed under the MIT License. See the [LICENS](LICENSE.md) file for details.
+This project is licensed under the MIT License. See the [LICENSE](LICENSE.md) file for details.
