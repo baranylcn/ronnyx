@@ -8,7 +8,9 @@ class Settings(BaseSettings):
     notion_version: str | None = Field(default=None, alias="NOTION_VERSION")
     database_id: str | None = Field(default=None, alias="DATABASE_ID")
     github_token: str | None = Field(default=None, alias="GITHUB_TOKEN")
-    ronnyx_base_url: str = Field(default="http://localhost:8000/api/chat", alias="RONNYX_BASE_URL")
+    ronnyx_base_url: str = Field(
+        default="http://localhost:8000/api/chat", alias="RONNYX_BASE_URL"
+    )
 
     llm_model: str = Field(default="gpt-4o", alias="LLM_MODEL")
 

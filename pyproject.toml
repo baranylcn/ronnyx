@@ -34,7 +34,7 @@ dev = [
 ]
 
 [project.scripts]
-ronnyx-chat = "app.cli:main"
+ronnyx-chat = "ronnyx.cli:main"
 
 [project.urls]
 Homepage = "https://github.com/baranylcn/ronnyx"
@@ -42,7 +42,7 @@ Source = "https://github.com/baranylcn/ronnyx"
 Issues = "https://github.com/baranylcn/ronnyx/issues"
 
 [tool.hatch.build.targets.wheel]
-packages = ["app"]
+packages = ["ronnyx"]
 
 [tool.hatch.build.targets.sdist]
-include = ["app", "README.md", "pyproject.toml"]
+include = ["ronnyx", "README.md", "pyproject.toml"]

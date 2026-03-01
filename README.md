@@ -71,7 +71,7 @@ Environment variables define external service access and can be extended as new 
 Start the application locally:
 
 ```bash
-uvicorn app.main:app --port 8000
+uvicorn ronnyx.main:app --port 8000
 ```
 
 The service will be available at:
@@ -131,7 +131,7 @@ The CLI communicates with the backend through the same HTTP API used by applicat
 Before using the CLI, **the server must be running**:
 
 ```bash
-uvicorn app.main:app --port 8000
+uvicorn ronnyx.main:app --port 8000
 ```
 
 ### Launching the CLI
