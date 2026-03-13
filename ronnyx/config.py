@@ -42,7 +42,9 @@ class RonnyxConfig:
 
         llm = data.get("llm", {})
         self.llm_model: str = llm.get("model", "gpt-4o")
-        self.llm_api_key: str = llm.get("api_key") or os.environ.get("OPENAI_API_KEY", "")
+        self.llm_api_key: str = llm.get("api_key") or os.environ.get(
+            "OPENAI_API_KEY", ""
+        )
 
         if not self.llm_api_key:
             raise ValueError(

@@ -17,7 +17,9 @@ async def lifespan(app: FastAPI):
 
     mcp = MultiServerMCPClient(config.mcp_servers)
     tools = await mcp.get_tools()
-    logger.info("Loaded %d tools from %d MCP servers", len(tools), len(config.mcp_servers))
+    logger.info(
+        "Loaded %d tools from %d MCP servers", len(tools), len(config.mcp_servers)
+    )
 
     custom = config.load_custom_tools()
     if custom:
