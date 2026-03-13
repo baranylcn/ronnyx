@@ -8,7 +8,17 @@ DEFAULT_BASE_URL = "http://127.0.0.1:8000/api/chat"
 DEFAULT_SESSION_ID = "1"
 
 
+BANNER = r"""
+  ____   ___  _   _ _   _ __   ____  __
+ |  _ \ / _ \| \ | | \ | |\ \ / /\ \/ /
+ | |_) | | | |  \| |  \| | \ V /  \  /
+ |  _ <| |_| | |\  | |\  |  | |   /  \
+ |_| \_\\___/|_| \_|_| \_|  |_|  /_/\_\
+"""
+
+
 def chat_loop(base_url: str, session_id: str) -> None:
+    print(BANNER)
     print(f"Connected to {base_url} (session: {session_id})")
     print("Type 'exit' or 'quit' to leave.\n")
 
