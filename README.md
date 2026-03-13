@@ -1,212 +1,150 @@
 # Ronnyx
 
-Ronnyx is an extensible personal assistant framework designed for building conversational systems with long-running workflows, external integrations, and session-aware state.
-The project provides a clean separation between reasoning, execution, and communication layers, allowing new capabilities to be added incrementally without altering the core architecture.
-Ronnyx is intended for developers who want to build assistant-like systems that can reason across multiple turns, interact with external services, and maintain continuity over time.
+A self-hosted AI assistant runtime. Define your tools, connect your services, and interact through an HTTP API or CLI -- all from a single YAML file.
 
----
+Ronnyx runs as a persistent service with session memory and automatic tool dispatch. It supports both external tool servers (via MCP) and custom Python functions, so you can mix off-the-shelf integrations with your own logic.
 
-## Core Capabilities
+## Features
 
-- Multi-turn conversational workflows with persistent session state  
-- Pluggable tool system for interacting with external services  
-- HTTP API for programmatic access and integration  
-- Clear separation between orchestration, tools, and interfaces  
-- Architecture designed for incremental extension rather than rewrites  
+- Connect external tool servers or write your own Python tools
+- Session-aware chat API with multi-turn conversation history
+- Single YAML config with environment variable resolution
+- Built-in CLI client for interactive use
+- Async LangGraph agent with automatic tool routing
 
----
-
-## Project Structure
-
-The repository is organized around clear responsibilities:
-
-- `app/` – Application logic, orchestration, and API layer  
-- `tests/` – Automated tests covering core logic and API behavior  
-- `.env.example` – Environment variable reference  
-- `CONTRIBUTING.md` – Contribution guidelines and development workflow  
-
-Each component is intentionally kept modular to support long-term evolution.
-
----
-
-## Installation
-
-Clone the repository and set up the environment.
+## Quick Start
 
 ```bash
 git clone https://github.com/baranylcn/ronnyx
 cd ronnyx
 python -m venv venv
 source venv/bin/activate   # macOS / Linux
-venv\Scripts\activate    # Windows
-pip install uv
-uv pip install -e .
+venv\Scripts\activate      # Windows
+pip install -e .
 ```
 
----
-
-## Configuration
-
-Create an environment configuration file:
+Copy and edit the config file:
 
 ```bash
-cp .env.example .env
+cp ronnyx.yaml.example ronnyx.yaml
 ```
 
-Minimum required variables:
+Set your API keys in `.env` or directly in `ronnyx.yaml`:
 
 ```
-OPENAI_API_KEY=your-key
-NOTION_TOKEN=your-token
-DATABASE_ID=your-database-id
-NOTION_VERSION=2022-06-28
+OPENAI_API_KEY=sk-...
+GITHUB_TOKEN=ghp_...
 ```
 
-Environment variables define external service access and can be extended as new tools are added.
-
----
-
-## Running the Server
-
-Start the application locally:
+Start the server:
 
 ```bash
-uvicorn ronnyx.main:app --port 8000
+ronnyx-serve
 ```
 
-The service will be available at:
-
-```
-http://localhost:8000
-```
-
-Health check endpoint:
-
-```bash
-curl http://localhost:8000/health
-```
-
-Chat API endpoint:
-
-```bash
-curl http://localhost:8000/api/chat
-```
-
----
-
-## Chat API
-**Endpoint:** POST /api/chat
-
-Ronnyx exposes a single conversational entry point that maintains session context across requests.
-
-### Request
-
-```json
-{
-  "session_id": "21",
-  "message": "What are my current tasks?"
-}
-```
-
-### Response
-
-```json
-{
-  "session_id": "21",
-  "reply": "Here are your current tasks:\n1. Data cleaning, In progress\n2. Publish release notes, Not started\nLet me know if you'd like to update or manage any of them."
-}
-```
-
-Each session maintains its own conversational history, enabling follow-up questions and contextual reasoning.
-
----
-
-## CLI Client
-
-Ronnyx includes an optional command-line interface for interactive use.  
-The CLI communicates with the backend through the same HTTP API used by applications.
-
-### Requirements
-
-Before using the CLI, **the server must be running**:
-
-```bash
-uvicorn ronnyx.main:app --port 8000
-```
-
-### Launching the CLI
-
-After installing the project in editable mode:
+In a separate terminal, start the CLI:
 
 ```bash
 ronnyx-chat
 ```
 
-Override the default configuration:
+## Configuration
+
+All configuration lives in `ronnyx.yaml`. Environment variables referenced with `${VAR}` are resolved from the shell environment or a `.env` file.
+
+```yaml
+llm:
+  model: gpt-4o
+  api_key: ${OPENAI_API_KEY}
+
+context:
+  github_username: ${GITHUB_USERNAME}
+
+servers:
+  github:
+    transport: stdio
+    command: npx
+    args: ["-y", "@modelcontextprotocol/server-github"]
+    env:
+      GITHUB_TOKEN: ${GITHUB_TOKEN}
+
+custom_tools:
+  - function: my_tools.list_repos
+    name: list_repos
+    description: "List GitHub repos for a user with sorting"
+```
+
+### Sections
+
+**llm** -- Model and API key. Any OpenAI-compatible model works.
+
+**context** -- Key-value pairs injected into the system prompt. Use this to give the assistant information it cannot retrieve from tools (username, timezone, preferences).
+
+**servers** -- External tool servers using the [Model Context Protocol](https://modelcontextprotocol.io). Each entry spawns a subprocess (stdio) or connects to a remote endpoint (SSE). All tools exposed by the server become available to the agent automatically.
+
+**custom_tools** -- Python functions loaded alongside server tools. Point to any callable or `StructuredTool` instance using its dotted import path. Use this when you need custom logic or when an external server doesn't cover your use case.
+
+## API
+
+### POST /api/chat
+
+Send a message and receive a response within a session.
 
 ```bash
+curl -X POST http://localhost:8000/api/chat \
+  -H "Content-Type: application/json" \
+  -d '{"session_id": "1", "message": "How many open issues do I have?"}'
+```
+
+```json
+{
+  "session_id": "1",
+  "reply": "You have 3 open issues in your repository."
+}
+```
+
+Each session maintains its own conversation history, so follow-up questions work naturally.
+
+### GET /api/tools
+
+List all loaded tools.
+
+```bash
+curl http://localhost:8000/api/tools
+```
+
+### GET /
+
+Health check.
+
+## CLI
+
+The CLI connects to the running server over HTTP.
+
+```bash
+ronnyx-chat
 ronnyx-chat --base-url http://localhost:8000/api/chat --session-id 42
 ```
 
-Example session:
-
-```bash
-You > Hello
-Ronnyx > Hi! How can I help you today?
+```
+You > How many open issues do I have?
+Ronnyx > You have 3 open issues in your repository.
 ```
 
----
-
-## Execution Model
-
-Ronnyx follows a consistent execution flow:
-
-1. A user message is received and associated with a session  
-2. The system evaluates the message and determines required actions  
-3. External operations are executed through registered tools  
-4. Results are incorporated into a natural language response  
-5. Session state is updated for subsequent interactions  
-
-This model allows reasoning and execution to evolve independently.
-
----
-
-## Extending the System
-
-Ronnyx is designed to grow through composition rather than modification. Common extension points include:
-
-- New external service tools  
-- Domain-specific workflows  
-- Alternative memory or persistence backends  
-- Multi-agent or hierarchical orchestration patterns  
-
-The core execution model remains stable while capabilities expand around it.
-
----
+The server must be running before starting the CLI.
 
 ## Testing
 
-The project includes an automated test suite covering orchestration logic, tool behavior, and API responses.
-
-Run all tests with:
-
 ```bash
-pytest
+pytest -q
 ```
 
-Tests are expected for all new functionality added to the system.
-
----
+All tests run offline without API keys or external servers.
 
 ## Contributing
 
-Contributions are welcome.
-
-Please review [CONTRIBUTING](CONTRIBUTING.md) for details on project structure, coding standards, and the contribution workflow.  
-Pull requests should be focused, clearly scoped, and accompanied by relevant tests.
-
----
+Contributions are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines. Pull requests should be focused, clearly scoped, and include tests.
 
 ## License
 
-This project is licensed under the MIT License. See the [LICENSE](LICENSE.md) file for details.
+MIT. See [LICENSE.md](LICENSE.md).
