@@ -1,20 +1,14 @@
-from typing import Dict
-
 from langchain_core.messages import HumanMessage
 
-from ronnyx.core.agent import AgentState, build_graph
-
-graph_app = build_graph()
-
-SESSIONS: Dict[str, AgentState] = {}
+from ronnyx.core.agent import AgentState
 
 
-def get_state(session_id: str) -> AgentState:
-    return SESSIONS.get(session_id, {"messages": []})
+def get_state(session_id: str, sessions: dict) -> AgentState:
+    return sessions.get(session_id, {"messages": []})
 
 
-def set_state(session_id: str, state: AgentState) -> None:
-    SESSIONS[session_id] = state
+def set_state(session_id: str, state: AgentState, sessions: dict) -> None:
+    sessions[session_id] = state
 
 
 def apply_user_message(state: AgentState, user_message: str) -> AgentState:

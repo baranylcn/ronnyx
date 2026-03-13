@@ -1,49 +1,58 @@
+import logging
 from typing import Annotated, Sequence, TypedDict
 
-from dotenv import load_dotenv
-from langchain_core.messages import BaseMessage, SystemMessage
+from langchain_core.messages import BaseMessage, SystemMessage, ToolMessage
 from langchain_openai import ChatOpenAI
 from langgraph.graph import END, StateGraph
 from langgraph.graph.message import add_messages
-from langgraph.prebuilt import ToolNode
 
-from ronnyx.core.tools.registry import TOOLS
-from ronnyx.core.prompts import ASSISTANT_SYSTEM_PROMPT
-from ronnyx.config import settings
+from ronnyx.core.prompts import SYSTEM_PROMPT
 
-load_dotenv()
+logger = logging.getLogger("ronnyx")
 
 
 class AgentState(TypedDict):
     messages: Annotated[Sequence[BaseMessage], add_messages]
 
 
-llm = ChatOpenAI(model=settings.llm_model).bind_tools(tools=TOOLS)
+def build_graph(tools: list, config):
+    tool_map = {t.name: t for t in tools}
+    llm = ChatOpenAI(
+        model=config.llm_model, temperature=0, api_key=config.llm_api_key
+    ).bind_tools(tools)
 
+    context_parts = config.build_context()
+    system_prompt = SYSTEM_PROMPT + context_parts if context_parts else SYSTEM_PROMPT
 
-def call_llm(state: AgentState) -> AgentState:
-    system_message = SystemMessage(content=ASSISTANT_SYSTEM_PROMPT)
-    response = llm.invoke([system_message] + list(state["messages"]))
-    return {"messages": [response]}
+    async def call_llm(state: AgentState) -> AgentState:
+        system = SystemMessage(content=system_prompt)
+        response = await llm.ainvoke([system] + list(state["messages"]))
+        return {"messages": [response]}
 
+    async def execute_tools(state: AgentState) -> AgentState:
+        last = state["messages"][-1]
+        results = []
+        for tc in last.tool_calls:
+            tool = tool_map.get(tc["name"])
+            if tool is None:
+                content = f"Tool '{tc['name']}' not found."
+            else:
+                try:
+                    content = await tool.ainvoke(tc["args"])
+                except Exception as e:
+                    logger.warning("Tool %s failed: %s", tc["name"], e)
+                    content = f"Tool error: {e}"
+            results.append(ToolMessage(content=str(content), tool_call_id=tc["id"]))
+        return {"messages": results}
 
-def should_continue(state: AgentState) -> str:
-    messages = state["messages"]
-    if not messages:
-        return "end"
-    last_message = messages[-1]
-    tool_calls = getattr(last_message, "tool_calls", None)
-    return "continue" if tool_calls else "end"
+    def should_continue(state: AgentState) -> str:
+        last = state["messages"][-1]
+        return "continue" if getattr(last, "tool_calls", None) else "end"
 
-
-def build_graph():
-    graph = StateGraph(state_schema=AgentState)
-    tool_node = ToolNode(tools=TOOLS)
-
+    graph = StateGraph(AgentState)
     graph.add_node("agent", call_llm)
-    graph.add_node("tools", tool_node)
+    graph.add_node("tools", execute_tools)
     graph.set_entry_point("agent")
-
     graph.add_conditional_edges(
         "agent",
         should_continue,

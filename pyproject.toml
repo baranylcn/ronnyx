@@ -4,13 +4,13 @@ build-backend = "hatchling.build"
 
 [project]
 name = "ronnyx"
-version = "0.1.0"
-description = "Extended orchestration-ready personal assistant framework built with LangGraph and FastAPI."
+version = "0.2.0"
+description = "Self-hosted MCP runtime with custom tool support. Connect any MCP server, add your own tools, chat via API or CLI."
 readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "MIT" }
 authors = [
-  { name = "Baran Yalçın" }
+  { name = "Baran Yalcin" }
 ]
 
 dependencies = [
@@ -18,23 +18,24 @@ dependencies = [
   "uvicorn[standard]>=0.30.0,<1.0.0",
   "python-dotenv>=1.0.1,<2.0.0",
   "pydantic>=2.8.0,<3.0.0",
-  "pydantic-settings>=2.3.0,<3.0.0",
-  "requests>=2.32.0,<3.0.0",
-  "langchain-core>=0.3.0,<0.4.0",
-  "langchain-openai>=0.2.0,<0.3.0",
-  "langgraph>=0.2.0,<0.3.0",
-  "PyGithub==2.8.1"
+  "pyyaml>=6.0.0,<7.0.0",
+  "langchain-core>=1.0.0,<2.0.0",
+  "langchain-openai>=1.0.0,<2.0.0",
+  "langgraph>=1.0.0,<2.0.0",
+  "langchain-mcp-adapters>=0.2.0,<1.0.0",
+  "requests>=2.31.0,<3.0.0",
 ]
 
 [project.optional-dependencies]
 dev = [
   "pytest>=8.0.0,<9.0.0",
-  "black>=24.8.0,<25.0.0",
-  "ruff>=0.6.0,<0.7.0",
+  "pytest-asyncio>=0.23.0,<1.0.0",
+  "ruff>=0.6.0,<1.0.0",
 ]
 
 [project.scripts]
 ronnyx-chat = "ronnyx.cli:main"
+ronnyx-serve = "ronnyx.serve:main"
 
 [project.urls]
 Homepage = "https://github.com/baranylcn/ronnyx"
@@ -45,4 +46,4 @@ Issues = "https://github.com/baranylcn/ronnyx/issues"
 packages = ["ronnyx"]
 
 [tool.hatch.build.targets.sdist]
-include = ["ronnyx", "README.md", "pyproject.toml"]
+include = ["ronnyx", "README.md", "pyproject.toml", "ronnyx.yaml.example"]

@@ -1,7 +1,8 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Request
+from langchain_core.messages import AIMessage
 from pydantic import BaseModel
 
-from ronnyx.api.deps import apply_user_message, get_state, graph_app, set_state
+from ronnyx.api.deps import apply_user_message, get_state, set_state
 from ronnyx.core.agent import AgentState
 
 router = APIRouter()
@@ -17,12 +18,25 @@ class ChatResponse(BaseModel):
     reply: str
 
 
-@router.post("/chat", response_model=ChatResponse)
-def chat(req: ChatRequest):
-    state: AgentState = get_state(req.session_id)
-    state = apply_user_message(state, req.message)
-    new_state = graph_app.invoke(state)
-    set_state(req.session_id, new_state)
+@router.get("/tools")
+async def list_tools(request: Request):
+    return {"tools": request.app.state.tool_names}
 
-    last_message = new_state["messages"][-1]
-    return ChatResponse(session_id=req.session_id, reply=last_message.content)
+
+@router.post("/chat", response_model=ChatResponse)
+async def chat(req: ChatRequest, request: Request):
+    graph = request.app.state.graph
+    sessions = request.app.state.sessions
+
+    state: AgentState = get_state(req.session_id, sessions)
+    state = apply_user_message(state, req.message)
+    new_state = await graph.ainvoke(state)
+    set_state(req.session_id, new_state, sessions)
+
+    reply = next(
+        m.content
+        for m in reversed(new_state["messages"])
+        if isinstance(m, AIMessage) and m.content
+    )
+
+    return ChatResponse(session_id=req.session_id, reply=reply)

@@ -1,4 +1,5 @@
 .env
+ronnyx.yaml
 venv/
 __pycache__/
 *.pyc

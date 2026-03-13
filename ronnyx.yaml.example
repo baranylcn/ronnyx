@@ -1,0 +1,37 @@
+# Ronnyx Configuration
+# Copy this file: cp ronnyx.yaml.example ronnyx.yaml
+# Variables like ${VAR} are resolved from environment or .env file
+
+llm:
+  model: gpt-4o
+  api_key: ${OPENAI_API_KEY}
+
+# Key-value pairs injected into the system prompt as context.
+# Use any keys relevant to your MCP servers.
+context:
+  github_username: ${GITHUB_USERNAME}
+  # timezone: Europe/Berlin
+  # language: English
+
+# MCP servers - each key becomes a named connection.
+servers:
+  github:
+    transport: stdio
+    command: npx
+    args: ["-y", "@modelcontextprotocol/server-github"]
+    env:
+      GITHUB_TOKEN: ${GITHUB_TOKEN}
+
+  # notion:
+  #   transport: stdio
+  #   command: npx
+  #   args: ["-y", "@notionhq/notion-mcp-server"]
+  #   env:
+  #     NOTION_TOKEN: ${NOTION_TOKEN}
+
+# Custom Python tools - loaded alongside MCP tools.
+# Each entry points to a callable or StructuredTool instance.
+# custom_tools:
+#   - function: my_tools.get_latest_repo
+#     name: get_latest_repo
+#     description: "Get the most recently created GitHub repo for a user"

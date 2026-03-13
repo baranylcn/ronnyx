@@ -9,9 +9,6 @@ DEFAULT_SESSION_ID = "1"
 
 
 def chat_loop(base_url: str, session_id: str) -> None:
-    """
-    Simple interactive chat loop over the HTTP API.
-    """
     print(f"Connected to {base_url} (session: {session_id})")
     print("Type 'exit' or 'quit' to leave.\n")
 
