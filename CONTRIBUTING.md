@@ -2,9 +2,9 @@
 
 Thank you for your interest in contributing to Ronnyx.
 
-Ronnyx is an extensible, tool-driven AI assistant designed to manage multiple platforms
-through a single conversational interface. The project focuses on clear tool contracts,
-stateful conversations, and predictable behavior.
+Ronnyx is an extensible, tool-driven AI assistant runtime that connects large language models
+to external services through the Model Context Protocol (MCP) and custom Python tools.
+The project focuses on clear tool contracts, stateful conversations, and predictable behavior.
 
 We welcome contributions of all kinds, including new integrations, improvements,
 bug fixes, tests, and documentation.
@@ -16,77 +16,141 @@ bug fixes, tests, and documentation.
 ### Prerequisites
 - Python 3.10+
 - An OpenAI API key
-- (Optional) API tokens for external platforms you want to work with
+- (Optional) API tokens for external services you want to connect
 
 ### Setup
 
 ```bash
 git clone https://github.com/baranylcn/ronnyx.git
 cd ronnyx
-pip install -e .
+pip install -e ".[dev]"
 ```
 
-Create a `.env` file based on `.env.example`.
+Copy the example files and fill in your credentials:
+
+```bash
+cp .env.example .env
+cp ronnyx.yaml.example ronnyx.yaml
+```
+
+Start the server:
+
+```bash
+ronnyx-serve
+```
+
+In another terminal, start the CLI:
+
+```bash
+ronnyx-chat
+```
 
 ---
 
 ## Project Structure
 
-```bash
-app/
+```
+ronnyx/
+  api/
+    routers.py            # HTTP API endpoints
+    deps.py               # Session state management
   core/
     agent.py              # LangGraph agent and graph orchestration
     prompts.py            # System prompt
-    tools/
-      github.py           # GitHub tool implementations
-      notion.py           # Notion tool implementations
-      registry.py         # Tool registry and composition
-  api/
-    routers.py            # HTTP API
-    deps.py               # Session state and graph wiring
+  cli.py                  # Terminal client
+  config.py               # Configuration loader
+  main.py                 # FastAPI app setup and MCP initialization
+  serve.py                # Uvicorn server launcher
+
+tests/
+  test_api.py             # API endpoint tests
+  test_config.py          # Configuration tests
+  test_deps.py            # Session state tests
+
+ronnyx.yaml.example       # Configuration template
+.env.example              # Environment variables template
 ```
 
 ---
 
 ## Core Concepts
 
-### Tool-Based Architecture
+### MCP-Based Tool Integration
 
-Ronnyx is built around tools.
+Ronnyx connects to external services via MCP servers defined in `ronnyx.yaml`.
+Each server runs as a subprocess (stdio transport) or a remote endpoint (SSE transport)
+and exposes tools that the LangGraph agent can invoke.
 
-- Each platform integration lives in its own module under app/core/tools/
-- Tools are defined using the @tool decorator
-- Each module exports a list of tools for that platform
-- Tools are composed centrally via the tool registry
+```yaml
+servers:
+  github:
+    transport: stdio
+    command: npx
+    args: ["-y", "@modelcontextprotocol/server-github"]
+    env:
+      GITHUB_TOKEN: ${GITHUB_TOKEN}
+```
 
-This design keeps integrations isolated, explicit, and easy to extend.
+### Custom Python Tools
+
+In addition to MCP servers, you can define custom tools as plain Python functions
+and load them through the configuration:
+
+```yaml
+custom_tools:
+  - path/to/my_tools.py
+```
+
+Functions decorated with `@tool` from `langchain_core.tools` are automatically discovered
+and registered when the module is loaded.
 
 ---
 
-## Adding a New Platform Integration
+## Adding a New MCP Server
 
-To add support for a new platform:
+To connect a new external service via MCP:
 
-1. Create a new module under app/core/tools/ (e.g. <platform>.py)
-2. Implement tool functions using the @tool decorator
-3. Initialize any required clients inside the module
-4. Return structured dictionaries (e.g. success, error, payload)
-5. Export all tools in a <platform>_tools list
-6. Register the tools in the tools registry
+1. Find or build an MCP server for the service
+2. Add its configuration to `ronnyx.yaml` under `servers:`
+3. Set any required credentials as environment variables in `.env`
+4. Restart the server — tools will be loaded automatically
 
-Example structure:
+Example:
+
+```yaml
+servers:
+  my_service:
+    transport: stdio
+    command: npx
+    args: ["-y", "mcp-server-my-service"]
+    env:
+      MY_SERVICE_TOKEN: ${MY_SERVICE_TOKEN}
+```
+
+---
+
+## Adding a Custom Python Tool
+
+To add a tool that does not have an MCP server:
+
+1. Create a Python module with tool functions using the `@tool` decorator
+2. Reference the module path in `ronnyx.yaml` under `custom_tools:`
+
+Example:
 
 ```python
 from langchain_core.tools import tool
 
 @tool
-def example_action(param: str) -> dict:
-    return {"success": True}
-
-example_tools = [example_action]
+def get_weather(city: str) -> dict:
+    """Return current weather for a city."""
+    return {"city": city, "temp": "22C"}
 ```
 
-The goal is clarity and predictability rather than hidden automation.
+```yaml
+custom_tools:
+  - tools/weather.py
+```
 
 ---
 
@@ -94,8 +158,8 @@ The goal is clarity and predictability rather than hidden automation.
 
 The system prompt lives in:
 
-```bash
-app/core/prompts.py
+```
+ronnyx/core/prompts.py
 ```
 
 When editing the prompt:
@@ -110,15 +174,18 @@ Prompt improvements are welcome and encouraged.
 
 ## Tests
 
-We aim to gradually increase test coverage.
+Run the test suite:
+
+```bash
+pytest -q
+```
 
 Guidelines:
 - Use pytest
-- Mock external APIs
+- Mock external APIs and MCP servers
 - Focus on input/output behavior
 - Avoid real network calls
-
-Tests should live under the tests/ directory and must not require real credentials.
+- Tests must not require real credentials
 
 ---
 
@@ -128,11 +195,11 @@ Please use clear and descriptive commit messages.
 
 Examples:
 
-```bash
-feat: add new platform integration
-refactor: improve tool composition logic
-test: add coverage for tool behavior
-docs: clarify contribution guidelines
+```
+feat: add new MCP server integration
+fix: handle tool execution timeout
+test: add coverage for config loading
+docs: update contribution guidelines
 ```
 
 ---
@@ -147,6 +214,13 @@ docs: clarify contribution guidelines
 ---
 
 ## Code Style
+
+We use `ruff` for linting and formatting. Run it before submitting:
+
+```bash
+ruff check .
+ruff format .
+```
 
 - Follow standard Python conventions (PEP 8)
 - Prefer readability over cleverness
