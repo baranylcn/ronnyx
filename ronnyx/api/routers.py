@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Request
+from fastapi import APIRouter, Request, HTTPException
 from langchain_core.messages import AIMessage
 from pydantic import BaseModel
 
@@ -34,9 +34,18 @@ async def chat(req: ChatRequest, request: Request):
     set_state(req.session_id, new_state, sessions)
 
     reply = next(
-        m.content
-        for m in reversed(new_state["messages"])
-        if isinstance(m, AIMessage) and m.content
+        (
+            m.content
+            for m in reversed(new_state["messages"])
+            if isinstance(m, AIMessage) and m.content
+        ),
+        None,
     )
+
+    if reply is None:
+        raise HTTPException(
+            status_code=500,
+            detail="No AI response generated",
+        )
 
     return ChatResponse(session_id=req.session_id, reply=reply)
