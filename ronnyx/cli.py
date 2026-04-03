@@ -20,7 +20,7 @@ BANNER = r"""
 def chat_loop(base_url: str, session_id: str) -> None:
     print(BANNER)
     print(f"Connected to {base_url} (session: {session_id})")
-    print("Type 'exit' or 'quit' to leave.\n")
+    print("Type 'exit' or 'quit' to leave. Use '/tools' to list available tools.\n")
 
     while True:
         try:
@@ -34,6 +34,23 @@ def chat_loop(base_url: str, session_id: str) -> None:
 
         if message.lower() in {"exit", "quit"}:
             break
+
+        if message.lower() == "/tools":
+            tools_url = base_url.replace("/api/chat", "/api/tools")
+            try:
+                response = requests.get(tools_url, timeout=30)
+                response.raise_for_status()
+                tools = response.json()
+                if tools:
+                    print("Available tools:")
+                    for tool in tools:
+                        name = tool if isinstance(tool, str) else tool.get("name", str(tool))
+                        print(f" - {name}")
+                else:
+                    print("No tools loaded.")
+            except requests.RequestException as exc:
+                print(f"[error] request failed: {exc}")
+            continue
 
         try:
             response = requests.post(
