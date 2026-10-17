@@ -19,7 +19,10 @@ class AgentState(TypedDict):
 def build_graph(tools: list, config):
     tool_map = {t.name: t for t in tools}
     llm = ChatOpenAI(
-        model=config.llm_model, temperature=0, api_key=config.llm_api_key
+        model=config.llm_model,
+        temperature=0,
+        api_key=config.llm_api_key,
+        base_url=config.llm_base_url,
     ).bind_tools(tools)
 
     context_parts = config.build_context()

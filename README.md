@@ -76,7 +76,20 @@ custom_tools:
 
 ### Sections
 
-**llm** -- Model and API key. Any OpenAI-compatible model works.
+**llm** -- Model, API key, and optional `base_url` for an OpenAI-compatible
+provider. Omit `base_url` to keep the default endpoint behavior. For a local
+Ollama server, use its OpenAI-compatible endpoint and a placeholder key (Ronnyx
+requires a non-empty key even when the server does not authenticate it):
+
+```yaml
+llm:
+  model: llama3.1
+  api_key: ollama
+  base_url: http://localhost:11434/v1
+```
+
+Other providers can use their own endpoint URL and API key. Like other config
+values, `base_url` supports `${VAR}` environment variable references.
 
 **context** -- Key-value pairs injected into the system prompt. Use this to give the assistant information it cannot retrieve from tools (username, timezone, preferences).
 

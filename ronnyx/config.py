@@ -41,6 +41,7 @@ class RonnyxConfig:
         data = _resolve_recursive(raw)
 
         llm = data.get("llm", {})
+        self.llm_base_url: str | None = llm.get("base_url")
         self.llm_model: str = llm.get("model", "gpt-4o")
         self.llm_api_key: str = llm.get("api_key") or os.environ.get(
             "OPENAI_API_KEY", ""

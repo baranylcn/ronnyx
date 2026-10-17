@@ -59,8 +59,22 @@ class TestRonnyxConfig:
         cfg = tmp_path / "ronnyx.yaml"
         cfg.write_text("llm:\n  model: gpt-4o-mini\n  api_key: test-key\n")
         config = RonnyxConfig(path=str(cfg))
+        assert config.llm_base_url is None
         assert config.llm_model == "gpt-4o-mini"
         assert config.llm_api_key == "test-key"
+
+    @pytest.mark.parametrize("base_url", [None, "http://localhost:11434/v1"])
+    def test_loads_base_url(self, tmp_path, base_url):
+        cfg = tmp_path / "ronnyx.yaml"
+        cfg.write_text(f"llm:\n  api_key: ollama\n  base_url: {base_url or 'null'}\n")
+        config = RonnyxConfig(path=str(cfg))
+        assert config.llm_base_url == base_url
+
+    def test_resolves_env_in_base_url(self, tmp_path, monkeypatch):
+        monkeypatch.setenv("TEST_LLM_BASE_URL", "http://localhost:11434/v1")
+        cfg = tmp_path / "ronnyx.yaml"
+        cfg.write_text("llm:\n  api_key: ollama\n  base_url: ${TEST_LLM_BASE_URL}\n")
+        assert RonnyxConfig(path=str(cfg)).llm_base_url == "http://localhost:11434/v1"
 
     def test_defaults_to_gpt4o(self, tmp_path):
         cfg = tmp_path / "ronnyx.yaml"
@@ -100,12 +114,7 @@ class TestRonnyxConfig:
 
     def test_stdio_server_inherits_system_env(self, tmp_path):
         cfg = tmp_path / "ronnyx.yaml"
-        cfg.write_text(
-            "llm:\n  api_key: k\n"
-            "servers:\n"
-            "  s:\n"
-            "    command: echo\n"
-        )
+        cfg.write_text("llm:\n  api_key: k\nservers:\n  s:\n    command: echo\n")
         with patch.dict(os.environ, {"PATH": "/usr/bin"}):
             config = RonnyxConfig(path=str(cfg))
             assert config.mcp_servers["s"]["env"]["PATH"] == "/usr/bin"
@@ -156,6 +165,7 @@ class TestCustomTools:
         )
 
         import sys
+
         sys.path.insert(0, str(tmp_path))
         try:
             config = RonnyxConfig(path=str(cfg))
@@ -168,19 +178,13 @@ class TestCustomTools:
     def test_invalid_function_path_skipped(self, tmp_path):
         cfg = tmp_path / "ronnyx.yaml"
         cfg.write_text(
-            "llm:\n  api_key: k\n"
-            "custom_tools:\n"
-            "  - function: nonexistent.module.func\n"
+            "llm:\n  api_key: k\ncustom_tools:\n  - function: nonexistent.module.func\n"
         )
         config = RonnyxConfig(path=str(cfg))
         assert config.load_custom_tools() == []
 
     def test_missing_function_key_skipped(self, tmp_path):
         cfg = tmp_path / "ronnyx.yaml"
-        cfg.write_text(
-            "llm:\n  api_key: k\n"
-            "custom_tools:\n"
-            "  - name: orphan\n"
-        )
+        cfg.write_text("llm:\n  api_key: k\ncustom_tools:\n  - name: orphan\n")
         config = RonnyxConfig(path=str(cfg))
         assert config.load_custom_tools() == []

@@ -5,6 +5,12 @@
 llm:
   model: gpt-4o
   api_key: ${OPENAI_API_KEY}
+  # Optional OpenAI-compatible endpoint; omit to keep the default behavior.
+  # base_url: https://openrouter.ai/api/v1
+  # For local Ollama, replace the llm values with:
+  # model: llama3.1
+  # api_key: ollama  # Non-empty placeholder; no real key needed locally.
+  # base_url: http://localhost:11434/v1
 
 # Key-value pairs injected into the system prompt as context.
 # Use any keys relevant to your MCP servers.
