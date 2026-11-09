@@ -2,6 +2,7 @@ import importlib
 import logging
 import os
 import re
+import sys
 from pathlib import Path
 
 import yaml
@@ -89,6 +90,12 @@ class RonnyxConfig:
         return "\n".join(lines) + "\n" if len(lines) > 1 else ""
 
     def load_custom_tools(self) -> list:
+        # Console scripts put their own bin directory on sys.path, not the
+        # working directory, so tool modules next to ronnyx.yaml would not import.
+        cwd = os.getcwd()
+        if cwd not in sys.path:
+            sys.path.insert(0, cwd)
+
         tools = []
         for entry in self._custom_tools_cfg:
             func_path = entry.get("function")

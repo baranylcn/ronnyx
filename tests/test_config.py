@@ -175,6 +175,24 @@ class TestCustomTools:
         finally:
             sys.path.remove(str(tmp_path))
 
+    def test_loads_module_from_working_directory(self, tmp_path, monkeypatch):
+        import sys
+
+        (tmp_path / "cwd_tool.py").write_text("def ping() -> str:\n    return 'pong'\n")
+        (tmp_path / "ronnyx.yaml").write_text(
+            "llm:\n  api_key: k\ncustom_tools:\n  - function: cwd_tool.ping\n"
+        )
+        # Mimic a console script, where the working directory is not on sys.path.
+        hidden = {"", ".", os.getcwd(), str(tmp_path)}
+        monkeypatch.setattr(sys, "path", [p for p in sys.path if p not in hidden])
+        monkeypatch.delitem(sys.modules, "cwd_tool", raising=False)
+        monkeypatch.chdir(tmp_path)
+
+        tools = RonnyxConfig(path="ronnyx.yaml").load_custom_tools()
+
+        assert [t.name for t in tools] == ["ping"]
+        sys.modules.pop("cwd_tool", None)
+
     def test_invalid_function_path_skipped(self, tmp_path):
         cfg = tmp_path / "ronnyx.yaml"
         cfg.write_text(
