@@ -11,6 +11,8 @@ from langchain_core.tools import StructuredTool
 
 logger = logging.getLogger("ronnyx")
 
+EXAMPLE_CONFIG_URL = "https://github.com/baranylcn/ronnyx/blob/main/ronnyx.yaml.example"
+
 
 def _resolve(value: str) -> str:
     return re.sub(r"\$\{(\w+)\}", lambda m: os.environ.get(m.group(1), ""), value)
@@ -32,8 +34,8 @@ class RonnyxConfig:
         config_path = Path(path)
         if not config_path.exists():
             raise FileNotFoundError(
-                f"Config file '{path}' not found. "
-                f"Copy ronnyx.yaml.example to ronnyx.yaml and edit it."
+                f"Config file '{config_path.resolve()}' not found. "
+                f"Create it in the directory you run Ronnyx from; see {EXAMPLE_CONFIG_URL}"
             )
 
         with open(config_path) as f:

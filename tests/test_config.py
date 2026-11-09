@@ -42,7 +42,7 @@ class TestResolveRecursive:
 
 class TestRonnyxConfig:
     def test_missing_config_file_raises(self, tmp_path):
-        with pytest.raises(FileNotFoundError):
+        with pytest.raises(FileNotFoundError, match="ronnyx.yaml.example"):
             RonnyxConfig(path=str(tmp_path / "nonexistent.yaml"))
 
     def test_missing_api_key_raises(self, tmp_path):
