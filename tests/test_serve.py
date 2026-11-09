@@ -38,7 +38,7 @@ def test_main_configures_logging_before_starting_server(run_mock):
     configure_mock.assert_called_once_with()
     run_mock.assert_called_once_with(
         "ronnyx.main:app",
-        host="0.0.0.0",
+        host="127.0.0.1",
         port=8000,
         reload=False,
     )

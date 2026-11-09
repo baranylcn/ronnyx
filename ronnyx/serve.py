@@ -5,7 +5,9 @@ import uvicorn
 from uvicorn.logging import DefaultFormatter
 
 LOGGER_NAME = "ronnyx"
-DEFAULT_HOST = "0.0.0.0"
+# The API has no authentication and the agent acts with the configured
+# credentials, so only expose it beyond localhost when asked to.
+DEFAULT_HOST = "127.0.0.1"
 DEFAULT_PORT = 8000
 
 
