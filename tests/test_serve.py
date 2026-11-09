@@ -33,12 +33,25 @@ def test_configure_logging_adds_one_formatted_handler():
 @patch("ronnyx.serve.uvicorn.run")
 def test_main_configures_logging_before_starting_server(run_mock):
     with patch("ronnyx.serve.configure_logging") as configure_mock:
-        serve.main()
+        serve.main([])
 
     configure_mock.assert_called_once_with()
     run_mock.assert_called_once_with(
         "ronnyx.main:app",
         host="0.0.0.0",
         port=8000,
+        reload=False,
+    )
+
+
+@patch("ronnyx.serve.uvicorn.run")
+def test_main_uses_host_and_port_options(run_mock):
+    with patch("ronnyx.serve.configure_logging"):
+        serve.main(["--host", "192.168.1.10", "--port", "9000"])
+
+    run_mock.assert_called_once_with(
+        "ronnyx.main:app",
+        host="192.168.1.10",
+        port=9000,
         reload=False,
     )
