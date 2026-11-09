@@ -55,6 +55,17 @@ In a separate terminal, start the CLI:
 ronnyx-chat
 ```
 
+## Running the Server
+
+`ronnyx-serve` listens on `127.0.0.1:8000` by default. Use `--host` and `--port` to change it:
+
+```bash
+ronnyx-serve --port 9000
+ronnyx-serve --host 0.0.0.0   # reachable from other machines
+```
+
+The API has no authentication, and the agent acts with every credential in your config. Anyone who can reach the port can use those tools. Keep the default `127.0.0.1` unless the server sits behind a reverse proxy or private network that controls access.
+
 ## Configuration
 
 All configuration lives in `ronnyx.yaml`. Environment variables referenced with `${VAR}` are resolved from the shell environment or a `.env` file.
