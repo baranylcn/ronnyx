@@ -15,21 +15,28 @@ Ronnyx runs as a persistent service with session memory and automatic tool dispa
 ## Quick Start
 
 ```bash
-git clone https://github.com/baranylcn/ronnyx
-cd ronnyx
-python -m venv venv
-source venv/bin/activate   # macOS / Linux
-venv\Scripts\activate      # Windows
-pip install -e .
+pip install ronnyx
 ```
 
-Copy and edit the config file:
+Create a `ronnyx.yaml` in the directory you will run Ronnyx from:
 
-```bash
-cp ronnyx.yaml.example ronnyx.yaml
+```yaml
+llm:
+  model: gpt-4o
+  api_key: ${OPENAI_API_KEY}
+
+servers:
+  github:
+    transport: stdio
+    command: npx
+    args: ["-y", "@modelcontextprotocol/server-github"]
+    env:
+      GITHUB_TOKEN: ${GITHUB_TOKEN}
 ```
 
-Set your API keys in `.env` or directly in `ronnyx.yaml`:
+A fully commented version is in [`ronnyx.yaml.example`](https://github.com/baranylcn/ronnyx/blob/main/ronnyx.yaml.example).
+
+Set your API keys in a `.env` file next to it, or directly in `ronnyx.yaml`:
 
 ```
 OPENAI_API_KEY=sk-...
@@ -104,7 +111,7 @@ values, `base_url` supports `${VAR}` environment variable references.
 Ronnyx can answer questions from your own documents using [GraphRAG](https://github.com/microsoft/graphrag). This is optional and requires Python 3.11+.
 
 ```bash
-pip install -e ".[graphrag]"
+pip install "ronnyx[graphrag]"
 ```
 
 Enable it in `ronnyx.yaml`:
@@ -181,7 +188,19 @@ Ronnyx > You have 3 open issues in your repository.
 
 The server must be running before starting the CLI.
 
-## Testing
+## Development
+
+```bash
+git clone https://github.com/baranylcn/ronnyx
+cd ronnyx
+python -m venv venv
+source venv/bin/activate   # macOS / Linux
+venv\Scripts\activate      # Windows
+pip install -e ".[dev]"
+cp ronnyx.yaml.example ronnyx.yaml
+```
+
+Run the tests:
 
 ```bash
 pytest -q
